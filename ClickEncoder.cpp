@@ -21,8 +21,10 @@
 // ----------------------------------------------------------------------------
 // Acceleration configuration (for 1000Hz calls to ::service())
 //
-#define ENC_ACCEL_TOP      3072   // max. acceleration: *12 (val >> 8)
-#define ENC_ACCEL_INC        25
+// calculator https://bit-calculator.com/bit-shift-calculator
+
+#define ENC_ACCEL_TOP      8192  // 128 // 8192: 32 >> 8 // 6144: 24 >> 8 // was 3072 // max. acceleration: *12 (val >> 8)
+#define ENC_ACCEL_INC       350   // was 25
 #define ENC_ACCEL_DEC         2
 
 // ----------------------------------------------------------------------------
@@ -47,7 +49,8 @@ ClickEncoder::ClickEncoder(uint8_t A, uint8_t B, uint8_t BTN, uint8_t stepsPerNo
   : doubleClickEnabled(true), accelerationEnabled(true),
     delta(0), last(0), acceleration(0),
     button(Open), steps(stepsPerNotch),
-    pinA(A), pinB(B), pinBTN(BTN), pinsActive(active)
+    pinA(A), pinB(B), pinBTN(BTN), pinsActive(active),
+    sign(1)
 {
   uint8_t configType = (pinsActive == LOW) ? INPUT_PULLUP : INPUT;
   pinMode(pinA, configType);
@@ -110,6 +113,13 @@ void ClickEncoder::service(void)
   if (diff & 1) {            // bit 0 = step
     last = curr;
     delta += (diff & 2) - 1; // bit 1 = direction (+/-)
+    
+    // jmc
+    // if change of direction, remove acceleration
+    if (accelerationEnabled && (diff & 2) != sign) {
+      sign = (diff & 2);
+      acceleration = 0;
+    }
     moved = true;
   }
 #else
