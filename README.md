@@ -4,6 +4,9 @@ ClickEncoder
 > Arduino library to handle rotary encoders **with** buttons as a user input device.
 Arduino RotaryEncoder with Button Implementation.
 
+This library has been forked to modify the acceleration beheavior: Now, when the direction changes,
+the acceleration is reset to 0.
+
 
 - Timer-Based: Works on any IO-Pin.
 - Supports rotary acceleration, so when the encoder is rotated faster, the encoders value will increment faster
