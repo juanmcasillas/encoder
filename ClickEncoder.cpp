@@ -46,9 +46,9 @@
 // ----------------------------------------------------------------------------
 
 ClickEncoder::ClickEncoder(uint8_t A, uint8_t B, uint8_t BTN, uint8_t stepsPerNotch, bool active)
-  : doubleClickEnabled(true), accelerationEnabled(true),
+  : accelerationEnabled(true),
     delta(0), last(0), acceleration(0),
-    button(Open), steps(stepsPerNotch),
+    steps(stepsPerNotch),
     pinA(A), pinB(B), pinBTN(BTN), pinsActive(active),
     sign(1)
 {
@@ -64,6 +64,11 @@ ClickEncoder::ClickEncoder(uint8_t A, uint8_t B, uint8_t BTN, uint8_t stepsPerNo
   if (digitalRead(pinB) == pinsActive) {
     last ^=1;
   }
+
+  #ifndef WITHOUT_BUTTON
+  doubleClickEnabled = true;
+  button = Open;
+  #endif
 }
 
 // ----------------------------------------------------------------------------
@@ -72,7 +77,7 @@ ClickEncoder::ClickEncoder(uint8_t A, uint8_t B, uint8_t BTN, uint8_t stepsPerNo
 void ClickEncoder::service(void)
 {
   bool moved = false;
-  unsigned long now = millis();
+  //unsigned long now = millis();
 
   if (accelerationEnabled) { // decelerate every tick
     acceleration -= ENC_ACCEL_DEC;
@@ -80,6 +85,15 @@ void ClickEncoder::service(void)
       acceleration = 0;
     }
   }
+  
+  // new debug for the constructor bug
+  // Serial.println("==");
+  // Serial.println(pinA);
+  // Serial.println(now);
+  // Serial.println(accelerationEnabled);
+  // Serial.println(acceleration);
+  // Serial.println("--");
+
 
 #if ENC_DECODER == ENC_FLAKY
   last = (last << 2) & 0x0F;
@@ -188,14 +202,15 @@ int16_t ClickEncoder::getValue(void)
 {
   int16_t val;
 
-  cli();
+  //cli();
+  noInterrupts();
   val = delta;
 
   if (steps == 2) delta = val & 1;
   else if (steps == 4) delta = val & 3;
   else delta = 0; // default to 1 step per notch
 
-  sei();
+  //sei();
 
   if (steps == 4) val >>= 2;
   if (steps == 2) val >>= 1;
@@ -210,6 +225,7 @@ int16_t ClickEncoder::getValue(void)
     r += 1 + accel;
   }
 
+  interrupts();
   return r;
 }
 

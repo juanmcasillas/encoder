@@ -20,6 +20,7 @@
 #include <avr/pgmspace.h>
 #include "Arduino.h"
 
+#define WITHOUT_BUTTON 1
 // ----------------------------------------------------------------------------
 
 #define ENC_NORMAL        (1 << 1)   // use Peter Danneger's decoder
@@ -56,8 +57,7 @@ public:
   } Button;
 
 public:
-  ClickEncoder(uint8_t A, uint8_t B, uint8_t BTN = -1,
-               uint8_t stepsPerNotch = 1, bool active = LOW);
+  ClickEncoder(uint8_t A, uint8_t B, uint8_t BTN = -1, uint8_t stepsPerNotch = 1, bool active = LOW);
 
   void service(void);
   int16_t getValue(void);
@@ -99,17 +99,17 @@ private:
   const uint8_t pinB;
   const uint8_t pinBTN;
   const bool pinsActive;
-  volatile int16_t delta;
-  volatile int16_t sign; // jmc
-  volatile int16_t last;
+  volatile int16_t delta; //v
+  volatile int16_t sign; // jmc v
+  volatile int16_t last; // v
   uint8_t steps;
-  volatile uint16_t acceleration;
+  volatile uint16_t acceleration; // v
   bool accelerationEnabled;
 #if ENC_DECODER != ENC_NORMAL
   static const int8_t table[16];
 #endif
 #ifndef WITHOUT_BUTTON
-  volatile Button button;
+  volatile Button button; // v
   bool doubleClickEnabled;
   uint16_t keyDownTicks = 0;
   uint8_t doubleClickTicks = 0;
